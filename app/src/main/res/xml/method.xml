@@ -1,2 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
 <input-method xmlns:android="http://schemas.android.com/apk/res/android"
-    android:label="@string/ime_edit_label"/>
+  android:label="@string/ime_edit_label"
+  android:settingsActivity="com.example.inputcustomizer.MainActivity">
+  <subtype
+    android:icon="@drawable/ic_launcher_foreground"
+    android:label="@string/subtype_english_us"
+    android:imeSubtypeLocale="en_US"
+    android:languageTag="en-US"
+    android:isAsciiCapable="true"
+    android:imeSubtypeMode="keyboard" />
+</input-method>

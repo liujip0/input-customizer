@@ -1,5 +1,6 @@
 <resources>
-    <string name="app_name">Input Customizer</string>
-    <string name="ime_edit_label">Android IMEedit</string>
-    <string name="ime_edit_settings">IMEedit Settings</string>
+  <string name="app_name">Input Customizer</string>
+  <string name="ime_edit_label">Android IMEedit</string>
+  <string name="ime_edit_settings">IMEedit Settings</string>
+  <string name="subtype_english_us">English US</string>
 </resources>
