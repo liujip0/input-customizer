@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option java_package = "com.example.inputcustomizer";
+option java_multiple_files = true;
+
+message Keyboards {
+  repeated Keyboard keyboards = 1;
+}
+
+message Keyboard {
+  repeated Layout layouts = 1;
+  string locale = 2;
+  uint32 id = 3;
+  string name = 4;
+}
+
+message Layout {
+  repeated Row rows = 1;
+  uint32 id = 2;
+  string name = 3;
+}
+
+message Row {
+  repeated Key keys = 1;
+}
+
+message Key {
+  uint32 keycode = 1;
+  optional uint32 longpress_keycode = 2;
+}
