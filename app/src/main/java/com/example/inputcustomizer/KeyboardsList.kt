@@ -1,5 +1,7 @@
 package com.example.inputcustomizer
 
+import EditKeyboardRoute
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,12 +12,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.inputcustomizer.components.Heading
+import com.example.inputcustomizer.components.NewItemDialog
 import com.example.inputcustomizer.components.Subheading
+import kotlinx.coroutines.launch
 
 @Composable
 fun KeyboardsList(
@@ -24,8 +32,11 @@ fun KeyboardsList(
   viewModel: KeyboardsViewModel = viewModel(),
 ) {
   val keyboards by viewModel.keyboardsFlow.collectAsState(
-    initial = Keyboards.getDefaultInstance()
+    initial = emptyList()
   )
+  val scope = rememberCoroutineScope()
+
+  var openNewKeyboardDialog by remember { mutableStateOf(false) }
 
   Scaffold(
     modifier = modifier
@@ -38,17 +49,23 @@ fun KeyboardsList(
       )
       Column {
         Subheading("Keyboards")
-        if (keyboards.keyboardsList.isEmpty()) {
+        if (keyboards.isEmpty()) {
           Text("No keyboards found")
         } else {
-          keyboards.keyboardsList.forEach {
-            Button(onClick = {}, modifier = Modifier.fillMaxWidth()) {
+          keyboards.forEach {
+            Button(
+              onClick = {
+                Log.d("KeyboardsList", "keyboard clicked: ${it.name}")
+                navController.navigate(EditKeyboardRoute(it.id))
+              },
+              modifier = Modifier.fillMaxWidth()
+            ) {
               Text(it.name)
             }
           }
         }
         Button(
-          onClick = { navController.navigate(Screen.NewKeyboard.route) },
+          onClick = { openNewKeyboardDialog = true },
           modifier = Modifier
             .padding(
               top = dimensionResource(R.dimen.standard_gap),
@@ -59,6 +76,25 @@ fun KeyboardsList(
           Text("Add Keyboard...")
         }
       }
+    }
+  }
+
+  when {
+    openNewKeyboardDialog -> {
+      NewItemDialog(
+        onDismissRequest = { openNewKeyboardDialog = false },
+        onDone = { keyboardName ->
+          scope.launch {
+            viewModel.addKeyboard(
+              keyboardName
+            )
+            openNewKeyboardDialog = false
+            navController.navigate(EditKeyboardRoute(keyboards.last().id))
+          }
+        },
+        title = "Create new keyboard",
+        nameLabel = "Keyboard name"
+      )
     }
   }
 }
