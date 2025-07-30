@@ -17,49 +17,86 @@ class KeyboardsViewModel(application: Application) :
   val keyboardsFlow: Flow<List<Keyboard>>
     get() = getKeyboardListFlow(appApplication)
 
-  suspend fun addKeyboard(keyboardName: String) {
-    val keyboardIds = keyboardsFlow.firstOrNull()?.map { it.id }
-    var newKeyboardId = 0
-    keyboardIds?.let { it ->
-      if (!it.isEmpty()) {
-        newKeyboardId = max(it) + 1
-      }
-    }
+  suspend fun getKeyboards(): Keyboards? {
+    return getKeyboardsFlow(appApplication).firstOrNull()
+  }
 
+  suspend fun editKeyboards(newKeyboards: Keyboards) {
     getKeyboardsFlow(appApplication).firstOrNull()?.let { currentKeyboards ->
-      val newKeyboards = currentKeyboards.toBuilder()
-        .addKeyboards(
-          Keyboard.newBuilder()
-            .setName(keyboardName)
-            .setId(
-              newKeyboardId
-            )
-        ).build()
       appApplication.applicationContext.keyboardsStore.updateData { newKeyboards }
     }
   }
 
-  suspend fun addLayoutToKeyboard(keyboardId: Int, layoutName: String) {
-    val keyboard =
-      keyboardsFlow.firstOrNull()?.find { it.id == keyboardId } ?: return
-    val layoutIds = keyboard.layoutsList.map { it.id }
+  suspend fun addKeyboard(keyboardName: String) {
+    val currentKeyboards = getKeyboards() ?: return
+    val keyboardIds = currentKeyboards.keyboardsList.map { it.id }
+    var newKeyboardId = 0
+    keyboardIds.let { it ->
+      if (!it.isEmpty()) {
+        newKeyboardId = max(it) + 1
+      }
+    }
+    editKeyboards(
+      currentKeyboards.toBuilder().addKeyboards(
+        Keyboard.newBuilder().setName(keyboardName).setId(newKeyboardId)
+      ).build()
+    )
+  }
+
+  suspend fun getKeyboard(keyboardId: Int): Keyboard? {
+    return keyboardsFlow.firstOrNull()?.find { it.id == keyboardId }
+  }
+
+  suspend fun editKeyboard(keyboardId: Int, keyboard: Keyboard) {
+    val currentKeyboards = getKeyboards()
+    if (currentKeyboards != null) {
+      val keyboardIndex =
+        currentKeyboards.keyboardsList.indexOfFirst { it.id == keyboardId }
+      editKeyboards(
+        currentKeyboards.toBuilder().setKeyboards(keyboardIndex, keyboard)
+          .build()
+      )
+    }
+  }
+
+  suspend fun addLayout(keyboardId: Int, layoutName: String) {
+    val currentKeyboard = getKeyboard(keyboardId) ?: return
+    val layoutIds = currentKeyboard.layoutsList.map { it.id }
     var newLayoutId = 0
     if (!layoutIds.isEmpty()) {
       newLayoutId = max(layoutIds) + 1
     }
-    getKeyboardsFlow(appApplication).firstOrNull()?.let { currentKeyboards ->
-      val builder = currentKeyboards.toBuilder()
-      val keyboardIndex =
-        builder.keyboardsList.indexOfFirst { it.id == keyboardId }
-      if (keyboardIndex != -1) {
-        val existingKeyboard = builder.getKeyboards(keyboardIndex)
-        val updatedKeyboard = existingKeyboard.toBuilder().addLayouts(
-          Layout.newBuilder().setName(layoutName).setId(newLayoutId)
-        ).build()
-        builder.setKeyboards(keyboardIndex, updatedKeyboard)
-        appApplication.applicationContext.keyboardsStore.updateData { builder.build() }
-      }
+    editKeyboard(
+      keyboardId,
+      currentKeyboard.toBuilder()
+        .addLayouts(Layout.newBuilder().setName(layoutName).setId(newLayoutId))
+        .build()
+    )
+  }
+
+  suspend fun getLayout(keyboardId: Int, layoutId: Int): Layout? {
+    return getKeyboard(keyboardId)?.layoutsList?.find { it.id == layoutId }
+  }
+
+  suspend fun editLayout(keyboardId: Int, layoutId: Int, layout: Layout) {
+    val currentKeyboard = getKeyboard(keyboardId)
+    if (currentKeyboard != null) {
+      val layoutIndex =
+        currentKeyboard.layoutsList.indexOfFirst { it.id == layoutId }
+      editKeyboard(
+        keyboardId,
+        currentKeyboard.toBuilder().setLayouts(layoutIndex, layout).build()
+      )
     }
+  }
+
+  suspend fun addRow(keyboardId: Int, layoutId: Int) {
+    val currentLayout = getLayout(keyboardId, layoutId) ?: return
+    editLayout(
+      keyboardId,
+      layoutId,
+      currentLayout.toBuilder().addRows(Row.newBuilder()).build()
+    )
   }
 }
 

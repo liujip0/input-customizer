@@ -2,9 +2,13 @@ package com.example.inputcustomizer
 
 import android.util.Log
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -36,6 +40,18 @@ fun EditLayout(
   ) { innerPadding ->
     Column(modifier = Modifier.padding(innerPadding)) {
       Heading("Edit: " + (layout.name ?: "Unknown Layout"))
+      Column {
+        layout.rowsList.forEach { row ->
+          Row {
+            row.keysList.forEach { key ->
+              Text(text = key.keycode.toString())
+            }
+          }
+        }
+        Button(onClick = { /*TODO*/ }, modifier = Modifier.fillMaxWidth()) {
+          Text("Add Row...")
+        }
+      }
     }
   }
 }
