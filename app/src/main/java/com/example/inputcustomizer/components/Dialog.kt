@@ -20,22 +20,29 @@ import com.example.inputcustomizer.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+fun Dialog(onDismissRequest: () -> Unit, content: @Composable () -> Unit) {
+  val bottomSheetState =
+    rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+  ModalBottomSheet(
+    onDismissRequest = onDismissRequest,
+    sheetState = bottomSheetState
+  ) {
+    content()
+  }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 fun NewItemDialog(
   onDismissRequest: () -> Unit,
   onDone: (String) -> Unit,
   title: String,
   nameLabel: String,
 ) {
-  val bottomSheetState = rememberModalBottomSheetState(
-    skipPartiallyExpanded = true
-  )
-
   var itemName by remember { mutableStateOf("") }
 
-  ModalBottomSheet(
-    onDismissRequest = onDismissRequest,
-    sheetState = bottomSheetState
-  ) {
+  Dialog(onDismissRequest) {
     Column(
       modifier = Modifier
         .fillMaxWidth()

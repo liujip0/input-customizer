@@ -86,17 +86,19 @@ fun EditKeyboard(
           onDismissRequest = { openNewLayoutDialog = false },
           onDone = { layoutName ->
             scope.launch {
-              viewModel.addLayout(
+              val layoutId = viewModel.addLayout(
                 keyboardId = keyboardId,
                 layoutName = layoutName
               )
               openNewLayoutDialog = false
-              navController.navigate(
-                EditLayoutRoute(
-                  keyboardId,
-                  keyboard.layoutsList.last().id
+              if (layoutId != null) {
+                navController.navigate(
+                  EditLayoutRoute(
+                    keyboardId,
+                    layoutId
+                  )
                 )
-              )
+              }
             }
           },
           title = "Create new layout",

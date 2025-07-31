@@ -24,7 +24,21 @@ message Row {
   repeated Key keys = 1;
 }
 
+enum KeyFunction {
+  NONE = 0;
+  TEXT = 1;
+  SHIFT = 2;
+  DELETE = 3;
+  ENTER = 4;
+}
+
 message Key {
-  uint32 keycode = 1;
-  optional uint32 longpress_keycode = 2;
+  KeyFunction function = 1;
+  string text = 2;
+  optional KeyFunction shift_function = 3;
+  optional string shift_text = 4;
+  optional KeyFunction longpress_function = 5;
+  optional string longpress_text = 6;
+  optional KeyFunction doubletap_function = 7;
+  optional string doubletap_text = 8;
 }

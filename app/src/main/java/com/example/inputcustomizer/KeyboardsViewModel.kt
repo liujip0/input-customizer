@@ -27,8 +27,8 @@ class KeyboardsViewModel(application: Application) :
     }
   }
 
-  suspend fun addKeyboard(keyboardName: String) {
-    val currentKeyboards = getKeyboards() ?: return
+  suspend fun addKeyboard(keyboardName: String): Int? {
+    val currentKeyboards = getKeyboards() ?: return null
     val keyboardIds = currentKeyboards.keyboardsList.map { it.id }
     var newKeyboardId = 0
     keyboardIds.let { it ->
@@ -41,6 +41,7 @@ class KeyboardsViewModel(application: Application) :
         Keyboard.newBuilder().setName(keyboardName).setId(newKeyboardId)
       ).build()
     )
+    return newKeyboardId
   }
 
   suspend fun getKeyboard(keyboardId: Int): Keyboard? {
@@ -59,8 +60,8 @@ class KeyboardsViewModel(application: Application) :
     }
   }
 
-  suspend fun addLayout(keyboardId: Int, layoutName: String) {
-    val currentKeyboard = getKeyboard(keyboardId) ?: return
+  suspend fun addLayout(keyboardId: Int, layoutName: String): Int? {
+    val currentKeyboard = getKeyboard(keyboardId) ?: return null
     val layoutIds = currentKeyboard.layoutsList.map { it.id }
     var newLayoutId = 0
     if (!layoutIds.isEmpty()) {
@@ -72,6 +73,7 @@ class KeyboardsViewModel(application: Application) :
         .addLayouts(Layout.newBuilder().setName(layoutName).setId(newLayoutId))
         .build()
     )
+    return newLayoutId
   }
 
   suspend fun getLayout(keyboardId: Int, layoutId: Int): Layout? {
@@ -79,15 +81,13 @@ class KeyboardsViewModel(application: Application) :
   }
 
   suspend fun editLayout(keyboardId: Int, layoutId: Int, layout: Layout) {
-    val currentKeyboard = getKeyboard(keyboardId)
-    if (currentKeyboard != null) {
-      val layoutIndex =
-        currentKeyboard.layoutsList.indexOfFirst { it.id == layoutId }
-      editKeyboard(
-        keyboardId,
-        currentKeyboard.toBuilder().setLayouts(layoutIndex, layout).build()
-      )
-    }
+    val currentKeyboard = getKeyboard(keyboardId) ?: return
+    val layoutIndex =
+      currentKeyboard.layoutsList.indexOfFirst { it.id == layoutId }
+    editKeyboard(
+      keyboardId,
+      currentKeyboard.toBuilder().setLayouts(layoutIndex, layout).build()
+    )
   }
 
   suspend fun addRow(keyboardId: Int, layoutId: Int) {
@@ -96,6 +96,54 @@ class KeyboardsViewModel(application: Application) :
       keyboardId,
       layoutId,
       currentLayout.toBuilder().addRows(Row.newBuilder()).build()
+    )
+  }
+
+  suspend fun getRow(keyboardId: Int, layoutId: Int, rowIndex: Int): Row? {
+    return getLayout(keyboardId, layoutId)?.getRows(rowIndex)
+  }
+
+  suspend fun editRow(keyboardId: Int, layoutId: Int, rowIndex: Int, row: Row) {
+    val currentLayout = getLayout(keyboardId, layoutId) ?: return
+    editLayout(
+      keyboardId,
+      layoutId,
+      currentLayout.toBuilder().setRows(rowIndex, row).build()
+    )
+  }
+
+  suspend fun addKey(keyboardId: Int, layoutId: Int, rowIndex: Int) {
+    val currentRow = getRow(keyboardId, layoutId, rowIndex) ?: return
+    editRow(
+      keyboardId,
+      layoutId,
+      rowIndex,
+      currentRow.toBuilder().addKeys(Key.newBuilder()).build()
+    )
+  }
+
+  suspend fun getKey(
+    keyboardId: Int,
+    layoutId: Int,
+    rowIndex: Int,
+    keyIndex: Int,
+  ): Key? {
+    return getRow(keyboardId, layoutId, rowIndex)?.getKeys(keyIndex)
+  }
+
+  suspend fun editKey(
+    keyboardId: Int,
+    layoutId: Int,
+    rowIndex: Int,
+    keyIndex: Int,
+    key: Key,
+  ) {
+    val currentRow = getRow(keyboardId, layoutId, rowIndex) ?: return
+    editRow(
+      keyboardId,
+      layoutId,
+      rowIndex,
+      currentRow.toBuilder().setKeys(keyIndex, key).build()
     )
   }
 }

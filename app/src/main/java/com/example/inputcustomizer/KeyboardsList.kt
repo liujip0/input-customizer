@@ -85,11 +85,13 @@ fun KeyboardsList(
         onDismissRequest = { openNewKeyboardDialog = false },
         onDone = { keyboardName ->
           scope.launch {
-            viewModel.addKeyboard(
+            val keyboardId = viewModel.addKeyboard(
               keyboardName
             )
             openNewKeyboardDialog = false
-            navController.navigate(EditKeyboardRoute(keyboards.last().id))
+            if (keyboardId != null) {
+              navController.navigate(EditKeyboardRoute(keyboardId))
+            }
           }
         },
         title = "Create new keyboard",
